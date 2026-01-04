@@ -190,3 +190,21 @@ LibsqlError: URL_SCHEME_NOT_SUPPORTED: The client supports only "libsql:", "wss:
 }
 
 Node.js v24.12.0
+2:19:37 AM [tsx] change in ./server/telegram-webhook.ts Rerunning...
+cfile:///Users/nikita/.gemini/antigravity/scratch/ngfit-pro-clean/node_modules/@libsql/core/lib-esm/config.js:94
+        throw new LibsqlError('The client supports only "libsql:", "wss:", "ws:", "https:", "http:" and "file:" URLs, ' +
+              ^
+
+LibsqlError: URL_SCHEME_NOT_SUPPORTED: The client supports only "libsql:", "wss:", "ws:", "https:", "http:" and "file:" URLs, got "mysql:". For more information, please read https://github.com/libsql/libsql-client-ts#supported-urls
+    at expandConfig (file:///Users/nikita/.gemini/antigravity/scratch/ngfit-pro-clean/node_modules/@libsql/core/lib-esm/config.js:94:15)
+    at createClient (file:///Users/nikita/.gemini/antigravity/scratch/ngfit-pro-clean/node_modules/@libsql/client/lib-esm/node.js:11:26)
+    at <anonymous> (/Users/nikita/.gemini/antigravity/scratch/ngfit-pro-clean/server/db.ts:12:16)
+    at ModuleJob.run (node:internal/modules/esm/module_job:413:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:660:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5) {
+  code: 'URL_SCHEME_NOT_SUPPORTED',
+  rawCode: undefined,
+  [cause]: undefined
+}
+
+Node.js v24.12.0

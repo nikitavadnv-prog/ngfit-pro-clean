@@ -130,16 +130,11 @@ export async function handleTelegramWebhook(req: Request, res: Response) {
         await sendWebAppButton(chatId);
       }
 
-      // Handle /app command
-      if (text === "/app") {
-        await sendWebAppButton(chatId);
-      }
-
       // Handle /help command
       if (text === "/help") {
         await sendTelegramMessage(
           chatId,
-          `<b>Доступные команды:</b>\n\n/start - Начать\n/app - Открыть приложение\n/help - Справка\n\nИспользуйте кнопку ниже для запуска NGFit Pro:`,
+          `<b>Доступные команды:</b>\n\n/start - Начать работу\n/help - Справка\n\nИспользуйте кнопку ниже для запуска NGFit Pro:`,
           {
             inline_keyboard: [
               [
