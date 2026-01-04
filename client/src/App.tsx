@@ -43,13 +43,9 @@ function App() {
       tg.expand();
       tg.ready();
 
-      // Auto-login for Telegram users (bypass old auth)
+      // Auto-login for Telegram users 
+      // The backend will authenticate via initData header in main.tsx
       setIsAuthenticated(true);
-      if (!user) {
-        localStorage.setItem("ngfit_user", JSON.stringify({ name: "Demo User", role: "admin" }));
-      }
-
-      // Fix keyboard issue on mobile
 
       // Fix keyboard issue on mobile
       const originalHeight = window.innerHeight;

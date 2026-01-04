@@ -6,3 +6,8 @@
 [OAuth] ERROR: OAUTH_SERVER_URL is not configured! Set OAUTH_SERVER_URL environment variable.
 Port 3000 is busy, using port 3001 instead
 Server running on http://localhost:3001/
+8:49:18 PM [vite] (client) page reload src/main.tsx
+8:49:32 PM [tsx] change in ./server/_core/context.ts Restarting...
+c[OAuth] Initialized with baseURL: 
+[OAuth] ERROR: OAUTH_SERVER_URL is not configured! Set OAUTH_SERVER_URL environment variable.
+Server running on http://localhost:3000/

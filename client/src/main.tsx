@@ -46,6 +46,11 @@ const trpcClient = trpc.createClient({
         return globalThis.fetch(input, {
           ...(init ?? {}),
           credentials: "include",
+          headers: {
+            ...(init?.headers ?? {}),
+            // Send Telegram WebApp initData as Authorization header
+            Authorization: (window as any).Telegram?.WebApp?.initData || "",
+          },
         });
       },
     }),
