@@ -1,94 +1,105 @@
-// server/_core/index.ts
-import "dotenv/config";
-import express2 from "express";
-import { createServer } from "http";
-import net from "net";
-import { createExpressMiddleware } from "@trpc/server/adapters/express";
-
-// shared/const.ts
-var COOKIE_NAME = "app_session_id";
-var ONE_YEAR_MS = 1e3 * 60 * 60 * 24 * 365;
-var AXIOS_TIMEOUT_MS = 3e4;
-var UNAUTHED_ERR_MSG = "Please login (10001)";
-var NOT_ADMIN_ERR_MSG = "You do not have required permission (10002)";
-
-// server/db.ts
-import { eq } from "drizzle-orm";
-import { drizzle } from "drizzle-orm/better-sqlite3";
-import Database from "better-sqlite3";
+var __defProp = Object.defineProperty;
+var __getOwnPropNames = Object.getOwnPropertyNames;
+var __esm = (fn, res) => function __init() {
+  return fn && (res = (0, fn[__getOwnPropNames(fn)[0]])(fn = 0)), res;
+};
+var __export = (target, all) => {
+  for (var name in all)
+    __defProp(target, name, { get: all[name], enumerable: true });
+};
 
 // drizzle/schema.ts
 import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
-var users = sqliteTable("users", {
-  /**
-   * Surrogate primary key. Auto-incremented numeric value managed by the database.
-   * Use this for relations between tables.
-   */
-  id: integer("id").primaryKey({ autoIncrement: true }),
-  /** Manus OAuth identifier (openId) returned from the OAuth callback. Unique per user. */
-  openId: text("openId").notNull().unique(),
-  name: text("name"),
-  email: text("email"),
-  loginMethod: text("loginMethod"),
-  role: text("role", { enum: ["user", "admin"] }).default("user").notNull(),
-  createdAt: text("createdAt").default("CURRENT_TIMESTAMP").notNull(),
-  updatedAt: text("updatedAt").default("CURRENT_TIMESTAMP").notNull(),
-  lastSignedIn: text("lastSignedIn").default("CURRENT_TIMESTAMP").notNull()
-});
-var clients = sqliteTable("clients", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
-  userId: integer("userId").notNull(),
-  name: text("name").notNull(),
-  phone: text("phone"),
-  email: text("email"),
-  birthDate: text("birthDate"),
-  experience: text("experience"),
-  injuries: text("injuries"),
-  contraindications: text("contraindications"),
-  chronicDiseases: text("chronicDiseases"),
-  badHabits: text("badHabits"),
-  createdAt: text("createdAt").default("CURRENT_TIMESTAMP").notNull(),
-  updatedAt: text("updatedAt").default("CURRENT_TIMESTAMP").notNull()
-});
-var exercises = sqliteTable("exercises", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
-  userId: integer("userId").notNull(),
-  name: text("name").notNull(),
-  description: text("description"),
-  sets: integer("sets"),
-  reps: text("reps"),
-  weight: text("weight"),
-  createdAt: text("createdAt").default("CURRENT_TIMESTAMP").notNull(),
-  updatedAt: text("updatedAt").default("CURRENT_TIMESTAMP").notNull()
-});
-var schedules = sqliteTable("schedules", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
-  userId: integer("userId").notNull(),
-  clientId: integer("clientId"),
-  exerciseId: integer("exerciseId"),
-  date: text("date").notNull(),
-  time: text("time"),
-  notes: text("notes"),
-  completed: integer("completed").default(0),
-  createdAt: text("createdAt").default("CURRENT_TIMESTAMP").notNull(),
-  updatedAt: text("updatedAt").default("CURRENT_TIMESTAMP").notNull()
+var users, clients, exercises, schedules;
+var init_schema = __esm({
+  "drizzle/schema.ts"() {
+    "use strict";
+    users = sqliteTable("users", {
+      /**
+       * Surrogate primary key. Auto-incremented numeric value managed by the database.
+       * Use this for relations between tables.
+       */
+      id: integer("id").primaryKey({ autoIncrement: true }),
+      /** Manus OAuth identifier (openId) returned from the OAuth callback. Unique per user. */
+      openId: text("openId").notNull().unique(),
+      name: text("name"),
+      email: text("email"),
+      loginMethod: text("loginMethod"),
+      role: text("role", { enum: ["user", "admin"] }).default("user").notNull(),
+      createdAt: text("createdAt").default("CURRENT_TIMESTAMP").notNull(),
+      updatedAt: text("updatedAt").default("CURRENT_TIMESTAMP").notNull(),
+      lastSignedIn: text("lastSignedIn").default("CURRENT_TIMESTAMP").notNull()
+    });
+    clients = sqliteTable("clients", {
+      id: integer("id").primaryKey({ autoIncrement: true }),
+      userId: integer("userId").notNull(),
+      name: text("name").notNull(),
+      phone: text("phone"),
+      email: text("email"),
+      birthDate: text("birthDate"),
+      experience: text("experience"),
+      injuries: text("injuries"),
+      contraindications: text("contraindications"),
+      chronicDiseases: text("chronicDiseases"),
+      badHabits: text("badHabits"),
+      createdAt: text("createdAt").default("CURRENT_TIMESTAMP").notNull(),
+      updatedAt: text("updatedAt").default("CURRENT_TIMESTAMP").notNull()
+    });
+    exercises = sqliteTable("exercises", {
+      id: integer("id").primaryKey({ autoIncrement: true }),
+      userId: integer("userId").notNull(),
+      name: text("name").notNull(),
+      description: text("description"),
+      sets: integer("sets"),
+      reps: text("reps"),
+      weight: text("weight"),
+      createdAt: text("createdAt").default("CURRENT_TIMESTAMP").notNull(),
+      updatedAt: text("updatedAt").default("CURRENT_TIMESTAMP").notNull()
+    });
+    schedules = sqliteTable("schedules", {
+      id: integer("id").primaryKey({ autoIncrement: true }),
+      userId: integer("userId").notNull(),
+      clientId: integer("clientId"),
+      exerciseId: integer("exerciseId"),
+      date: text("date").notNull(),
+      time: text("time"),
+      notes: text("notes"),
+      completed: integer("completed").default(0),
+      createdAt: text("createdAt").default("CURRENT_TIMESTAMP").notNull(),
+      updatedAt: text("updatedAt").default("CURRENT_TIMESTAMP").notNull()
+    });
+  }
 });
 
 // server/_core/env.ts
-var ENV = {
-  appId: process.env.VITE_APP_ID ?? "",
-  cookieSecret: process.env.JWT_SECRET ?? "",
-  databaseUrl: process.env.DATABASE_URL ?? "",
-  oAuthServerUrl: process.env.OAUTH_SERVER_URL ?? "",
-  ownerOpenId: process.env.OWNER_OPEN_ID ?? "",
-  isProduction: process.env.NODE_ENV === "production",
-  forgeApiUrl: process.env.BUILT_IN_FORGE_API_URL ?? "",
-  forgeApiKey: process.env.BUILT_IN_FORGE_API_KEY ?? ""
-};
+var ENV;
+var init_env = __esm({
+  "server/_core/env.ts"() {
+    "use strict";
+    ENV = {
+      appId: process.env.VITE_APP_ID ?? "",
+      cookieSecret: process.env.JWT_SECRET ?? "",
+      databaseUrl: process.env.DATABASE_URL ?? "",
+      oAuthServerUrl: process.env.OAUTH_SERVER_URL ?? "",
+      ownerOpenId: process.env.OWNER_OPEN_ID ?? "",
+      isProduction: process.env.NODE_ENV === "production",
+      forgeApiUrl: process.env.BUILT_IN_FORGE_API_URL ?? "",
+      forgeApiKey: process.env.BUILT_IN_FORGE_API_KEY ?? ""
+    };
+  }
+});
 
 // server/db.ts
-var sqlite = new Database("sqlite.db");
-var db = drizzle(sqlite);
+var db_exports = {};
+__export(db_exports, {
+  db: () => db,
+  getDb: () => getDb,
+  getUserByOpenId: () => getUserByOpenId,
+  upsertUser: () => upsertUser
+});
+import { eq } from "drizzle-orm";
+import { drizzle } from "drizzle-orm/libsql";
+import { createClient } from "@libsql/client";
 async function getDb() {
   return db;
 }
@@ -143,6 +154,34 @@ async function getUserByOpenId(openId) {
   const result = await db.select().from(users).where(eq(users.openId, openId)).limit(1);
   return result.length > 0 ? result[0] : void 0;
 }
+var dbPath, client, db;
+var init_db = __esm({
+  "server/db.ts"() {
+    "use strict";
+    init_schema();
+    init_env();
+    dbPath = process.env.DATABASE_URL || "file:sqlite.db";
+    client = createClient({ url: dbPath });
+    db = drizzle(client);
+  }
+});
+
+// server/_core/index.ts
+import "dotenv/config";
+import express2 from "express";
+import { createServer } from "http";
+import net from "net";
+import { createExpressMiddleware } from "@trpc/server/adapters/express";
+
+// shared/const.ts
+var COOKIE_NAME = "app_session_id";
+var ONE_YEAR_MS = 1e3 * 60 * 60 * 24 * 365;
+var AXIOS_TIMEOUT_MS = 3e4;
+var UNAUTHED_ERR_MSG = "Please login (10001)";
+var NOT_ADMIN_ERR_MSG = "You do not have required permission (10002)";
+
+// server/_core/oauth.ts
+init_db();
 
 // server/_core/cookies.ts
 function isSecureRequest(req) {
@@ -172,6 +211,8 @@ var HttpError = class extends Error {
 var ForbiddenError = (msg) => new HttpError(403, msg);
 
 // server/_core/sdk.ts
+init_db();
+init_env();
 import axios from "axios";
 import { parse as parseCookieHeader } from "cookie";
 import { SignJWT, jwtVerify } from "jose";
@@ -180,8 +221,8 @@ var EXCHANGE_TOKEN_PATH = `/webdev.v1.WebDevAuthPublicService/ExchangeToken`;
 var GET_USER_INFO_PATH = `/webdev.v1.WebDevAuthPublicService/GetUserInfo`;
 var GET_USER_INFO_WITH_JWT_PATH = `/webdev.v1.WebDevAuthPublicService/GetUserInfoWithJwt`;
 var OAuthService = class {
-  constructor(client) {
-    this.client = client;
+  constructor(client2) {
+    this.client = client2;
     console.log("[OAuth] Initialized with baseURL:", ENV.oAuthServerUrl);
     if (!ENV.oAuthServerUrl) {
       console.error(
@@ -223,8 +264,8 @@ var createOAuthHttpClient = () => axios.create({
 var SDKServer = class {
   client;
   oauthService;
-  constructor(client = createOAuthHttpClient()) {
-    this.client = client;
+  constructor(client2 = createOAuthHttpClient()) {
+    this.client = client2;
     this.oauthService = new OAuthService(this.client);
   }
   deriveLoginMethod(platforms, fallback) {
@@ -358,7 +399,7 @@ var SDKServer = class {
       throw ForbiddenError("Invalid session cookie");
     }
     const sessionUserId = session.openId;
-    const signedInAt = /* @__PURE__ */ new Date();
+    const signedInAt = (/* @__PURE__ */ new Date()).toISOString();
     let user = await getUserByOpenId(sessionUserId);
     if (!user) {
       try {
@@ -368,7 +409,7 @@ var SDKServer = class {
           name: userInfo.name || null,
           email: userInfo.email ?? null,
           loginMethod: userInfo.loginMethod ?? userInfo.platform ?? null,
-          lastSignedIn: signedInAt
+          lastSignedIn: (/* @__PURE__ */ new Date()).toISOString()
         });
         user = await getUserByOpenId(userInfo.openId);
       } catch (error) {
@@ -413,7 +454,7 @@ function registerOAuthRoutes(app) {
         name: userInfo.name || null,
         email: userInfo.email ?? null,
         loginMethod: userInfo.loginMethod ?? userInfo.platform ?? null,
-        lastSignedIn: /* @__PURE__ */ new Date()
+        lastSignedIn: (/* @__PURE__ */ new Date()).toISOString()
       });
       const sessionToken = await sdk.createSessionToken(userInfo.openId, {
         name: userInfo.name || "",
@@ -433,6 +474,7 @@ function registerOAuthRoutes(app) {
 import { z } from "zod";
 
 // server/_core/notification.ts
+init_env();
 import { TRPCError } from "@trpc/server";
 var TITLE_MAX_LENGTH = 1200;
 var CONTENT_MAX_LENGTH = 2e4;
@@ -688,6 +730,8 @@ ${input.clientName ? `<b>\u041A\u043B\u0438\u0435\u043D\u0442:</b> ${input.clien
 
 // server/routers/fitness.ts
 import { z as z3 } from "zod";
+init_db();
+init_schema();
 import { eq as eq2, and } from "drizzle-orm";
 var fitnessRouter = router({
   // Clients
@@ -864,17 +908,45 @@ var appRouter = router({
 async function createContext(opts) {
   let user = null;
   try {
-    user = {
-      id: 1,
-      openId: "demo_user",
-      name: "Demo Trainer",
-      email: "demo@ngfit.pro",
-      loginMethod: "telegram",
-      role: "admin",
-      createdAt: (/* @__PURE__ */ new Date()).toISOString(),
-      updatedAt: (/* @__PURE__ */ new Date()).toISOString(),
-      lastSignedIn: (/* @__PURE__ */ new Date()).toISOString()
-    };
+    const authHeader = opts.req.headers.authorization;
+    if (authHeader) {
+      const params = new URLSearchParams(authHeader);
+      const userStr = params.get("user");
+      if (userStr) {
+        const tgUser = JSON.parse(userStr);
+        const openId = String(tgUser.id);
+        if (openId) {
+          const insertData = {
+            openId,
+            name: [tgUser.first_name, tgUser.last_name].filter(Boolean).join(" ") || tgUser.username || "User",
+            loginMethod: "telegram",
+            // Explicit cast
+            role: void 0
+            // Role determines logic inside upsert
+          };
+          const { upsertUser: upsertUser2, getUserByOpenId: getUserByOpenId2 } = await Promise.resolve().then(() => (init_db(), db_exports));
+          await upsertUser2(insertData);
+          const dbUser = await getUserByOpenId2(openId);
+          if (dbUser) {
+            user = dbUser;
+          }
+        }
+      }
+    }
+    if (!user && !authHeader) {
+      console.log("No Auth Header - Using Demo User");
+      user = {
+        id: 1,
+        openId: "demo_user",
+        name: "Demo Trainer",
+        email: "demo@ngfit.pro",
+        loginMethod: "telegram",
+        role: "admin",
+        createdAt: (/* @__PURE__ */ new Date()).toISOString(),
+        updatedAt: (/* @__PURE__ */ new Date()).toISOString(),
+        lastSignedIn: (/* @__PURE__ */ new Date()).toISOString()
+      };
+    }
   } catch (error) {
     console.error("Auth error:", error);
     user = null;
@@ -971,8 +1043,11 @@ function serveStatic(app) {
 
 // server/telegram-webhook.ts
 import { z as z4 } from "zod";
-var TELEGRAM_BOT_TOKEN2 = process.env.TELEGRAM_BOT_TOKEN;
-var APP_URL = process.env.VITE_APP_URL || "https://ngfit-pro.manus.space";
+var TELEGRAM_BOT_TOKEN2 = process.env.TELEGRAM_BOT_TOKEN || process.env.BOT_TOKEN;
+var APP_URL = process.env.VITE_APP_URL || process.env.RENDER_EXTERNAL_URL || "";
+function setAppUrl(url) {
+  APP_URL = url.replace(/\/$/, "");
+}
 var TelegramUpdateSchema = z4.object({
   update_id: z4.number(),
   message: z4.object({
@@ -1095,6 +1170,38 @@ async function handleTelegramWebhook(req, res) {
     res.status(500).json({ error: "Internal server error" });
   }
 }
+async function registerTelegramWebhook(webhookUrl) {
+  if (!TELEGRAM_BOT_TOKEN2) {
+    throw new Error("TELEGRAM_BOT_TOKEN not configured");
+  }
+  try {
+    const response = await fetch(
+      `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN2}/setWebhook`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          url: webhookUrl,
+          allowed_updates: ["message"]
+        })
+      }
+    );
+    const data = await response.json();
+    if (data.ok) {
+      console.log("\u2713 Telegram webhook registered successfully");
+      console.log(`Webhook URL: ${webhookUrl}`);
+      return true;
+    } else {
+      console.error("Failed to register webhook:", data.description);
+      return false;
+    }
+  } catch (error) {
+    console.error("Failed to register webhook:", error);
+    return false;
+  }
+}
 
 // server/_core/index.ts
 function isPortAvailable(port) {
@@ -1133,13 +1240,30 @@ async function startServer() {
   } else {
     serveStatic(app);
   }
-  const preferredPort = parseInt(process.env.PORT || "3000");
-  const port = await findAvailablePort(preferredPort);
-  if (port !== preferredPort) {
-    console.log(`Port ${preferredPort} is busy, using port ${port} instead`);
+  let port;
+  if (process.env.NODE_ENV === "production") {
+    port = parseInt(process.env.PORT || "3000");
+  } else {
+    const preferredPort = parseInt(process.env.PORT || "3000");
+    port = await findAvailablePort(preferredPort);
+    if (port !== preferredPort) {
+      console.log(`Port ${preferredPort} is busy, using port ${port} instead`);
+    }
   }
-  server.listen(port, () => {
+  server.listen(port, async () => {
     console.log(`Server running on http://localhost:${port}/`);
+    const botToken = process.env.TELEGRAM_BOT_TOKEN || process.env.BOT_TOKEN;
+    if (botToken && process.env.VITE_APP_URL) {
+      const appUrl = process.env.VITE_APP_URL.replace(/\/$/, "");
+      setAppUrl(appUrl);
+      const webhookUrl = `${appUrl}/api/telegram/webhook/${botToken}`;
+      console.log(`Registering Telegram webhook: ${webhookUrl}`);
+      try {
+        await registerTelegramWebhook(webhookUrl);
+      } catch (err) {
+        console.error("Failed to register Telegram webhook:", err);
+      }
+    }
   });
 }
 startServer().catch(console.error);

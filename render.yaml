@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: ngfit-pro
+    runtime: node
+    plan: free
+    buildCommand: npm install && npm run build
+    startCommand: npm run db:push && npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        value: /data/sqlite.db
+      - key: TELEGRAM_BOT_TOKEN
+        sync: false
+    disk:
+      name: sqlite-data
+      mountPath: /data
+      sizeGB: 1

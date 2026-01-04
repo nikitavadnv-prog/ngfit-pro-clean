@@ -7,7 +7,7 @@ import { registerOAuthRoutes } from "./oauth";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
-import { handleTelegramWebhook, registerTelegramWebhook } from "../telegram-webhook";
+import { handleTelegramWebhook, registerTelegramWebhook, setAppUrl } from "../telegram-webhook";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -53,15 +53,33 @@ async function startServer() {
     serveStatic(app);
   }
 
-  const preferredPort = parseInt(process.env.PORT || "3000");
-  const port = await findAvailablePort(preferredPort);
-
-  if (port !== preferredPort) {
-    console.log(`Port ${preferredPort} is busy, using port ${port} instead`);
+  let port: number;
+  if (process.env.NODE_ENV === "production") {
+    port = parseInt(process.env.PORT || "3000");
+  } else {
+    const preferredPort = parseInt(process.env.PORT || "3000");
+    port = await findAvailablePort(preferredPort);
+    if (port !== preferredPort) {
+      console.log(`Port ${preferredPort} is busy, using port ${port} instead`);
+    }
   }
 
-  server.listen(port, () => {
+  server.listen(port, async () => {
     console.log(`Server running on http://localhost:${port}/`);
+
+    // Auto-register Telegram webhook in production or if BOT_TOKEN is present
+    const botToken = process.env.TELEGRAM_BOT_TOKEN || process.env.BOT_TOKEN;
+    if (botToken && process.env.VITE_APP_URL) {
+      const appUrl = process.env.VITE_APP_URL.replace(/\/$/, "");
+      setAppUrl(appUrl);
+      const webhookUrl = `${appUrl}/api/telegram/webhook/${botToken}`;
+      console.log(`Registering Telegram webhook: ${webhookUrl}`);
+      try {
+        await registerTelegramWebhook(webhookUrl);
+      } catch (err) {
+        console.error("Failed to register Telegram webhook:", err);
+      }
+    }
   });
 }
 

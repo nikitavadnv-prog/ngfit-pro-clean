@@ -1,8 +1,15 @@
 import express, { Request, Response } from "express";
 import { z } from "zod";
 
-const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
-const APP_URL = process.env.VITE_APP_URL || "https://ngfit-pro.manus.space";
+const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || process.env.BOT_TOKEN;
+let APP_URL = process.env.VITE_APP_URL || process.env.RENDER_EXTERNAL_URL || "";
+
+/**
+ * Set the application URL dynamically if needed
+ */
+export function setAppUrl(url: string) {
+  APP_URL = url.replace(/\/$/, "");
+}
 
 /**
  * Telegram Update schema

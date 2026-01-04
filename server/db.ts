@@ -1,12 +1,13 @@
 import { eq } from "drizzle-orm";
-import { drizzle } from "drizzle-orm/better-sqlite3";
-import Database from "better-sqlite3";
+import { drizzle } from "drizzle-orm/libsql";
+import { createClient } from "@libsql/client";
 import { InsertUser, users } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 // SQLite setup
-const sqlite = new Database("sqlite.db");
-export const db = drizzle(sqlite);
+const dbPath = process.env.DATABASE_URL || "file:sqlite.db";
+const client = createClient({ url: dbPath });
+export const db = drizzle(client);
 
 export async function getDb() {
   return db;
