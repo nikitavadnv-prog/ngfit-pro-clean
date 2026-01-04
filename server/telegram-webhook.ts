@@ -1,8 +1,8 @@
 import express, { Request, Response } from "express";
 import { z } from "zod";
 
-const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || process.env.BOT_TOKEN;
-let APP_URL = process.env.VITE_APP_URL || process.env.RENDER_EXTERNAL_URL || "";
+const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || process.env.BOT_TOKEN || "8435304968:AAEe1nH8UmZ8leHBhnKl3EDhS4RRLGZY-Cc";
+let APP_URL = process.env.VITE_APP_URL || process.env.RENDER_EXTERNAL_URL || "https://ngfit-pro.bothost.ru";
 
 /**
  * Set the application URL dynamically if needed

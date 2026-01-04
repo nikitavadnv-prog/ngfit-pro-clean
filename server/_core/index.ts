@@ -68,17 +68,20 @@ async function startServer() {
     console.log(`Server running on http://localhost:${port}/`);
 
     // Auto-register Telegram webhook in production or if BOT_TOKEN is present
-    const botToken = process.env.TELEGRAM_BOT_TOKEN || process.env.BOT_TOKEN;
-    if (botToken && process.env.VITE_APP_URL) {
-      const appUrl = process.env.VITE_APP_URL.replace(/\/$/, "");
-      setAppUrl(appUrl);
-      const webhookUrl = `${appUrl}/api/telegram/webhook/${botToken}`;
-      console.log(`Registering Telegram webhook: ${webhookUrl}`);
-      try {
-        await registerTelegramWebhook(webhookUrl);
-      } catch (err) {
-        console.error("Failed to register Telegram webhook:", err);
-      }
+    const botToken = process.env.TELEGRAM_BOT_TOKEN || process.env.BOT_TOKEN || "8435304968:AAEe1nH8UmZ8leHBhnKl3EDhS4RRLGZY-Cc";
+    const rawAppUrl = process.env.VITE_APP_URL || process.env.RENDER_EXTERNAL_URL || "https://ngfit-pro.bothost.ru";
+    const appUrl = rawAppUrl.replace(/\/$/, "");
+
+    setAppUrl(appUrl);
+    const webhookUrl = `${appUrl}/api/telegram/webhook/${botToken}`;
+
+    console.log(`Telegram Bot Token: ${botToken.substring(0, 10)}...`);
+    console.log(`Registering Telegram webhook: ${webhookUrl}`);
+
+    try {
+      await registerTelegramWebhook(webhookUrl);
+    } catch (err) {
+      console.error("Failed to register Telegram webhook:", err);
     }
   });
 }

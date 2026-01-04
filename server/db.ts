@@ -4,8 +4,11 @@ import { createClient } from "@libsql/client";
 import { InsertUser, users } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
-// SQLite setup
-const dbPath = process.env.DATABASE_URL || "file:sqlite.db";
+// libSQL / SQLite setup
+let dbPath = process.env.DATABASE_URL || "file:sqlite.db";
+if (dbPath === "sqlite.db") {
+  dbPath = "file:sqlite.db";
+}
 const client = createClient({ url: dbPath });
 export const db = drizzle(client);
 

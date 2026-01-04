@@ -161,6 +161,9 @@ var init_db = __esm({
     init_schema();
     init_env();
     dbPath = process.env.DATABASE_URL || "file:sqlite.db";
+    if (dbPath === "sqlite.db") {
+      dbPath = "file:sqlite.db";
+    }
     client = createClient({ url: dbPath });
     db = drizzle(client);
   }
@@ -1043,8 +1046,8 @@ function serveStatic(app) {
 
 // server/telegram-webhook.ts
 import { z as z4 } from "zod";
-var TELEGRAM_BOT_TOKEN2 = process.env.TELEGRAM_BOT_TOKEN || process.env.BOT_TOKEN;
-var APP_URL = process.env.VITE_APP_URL || process.env.RENDER_EXTERNAL_URL || "";
+var TELEGRAM_BOT_TOKEN2 = process.env.TELEGRAM_BOT_TOKEN || process.env.BOT_TOKEN || "8435304968:AAEe1nH8UmZ8leHBhnKl3EDhS4RRLGZY-Cc";
+var APP_URL = process.env.VITE_APP_URL || process.env.RENDER_EXTERNAL_URL || "https://ngfit-pro.bothost.ru";
 function setAppUrl(url) {
   APP_URL = url.replace(/\/$/, "");
 }
@@ -1252,17 +1255,17 @@ async function startServer() {
   }
   server.listen(port, async () => {
     console.log(`Server running on http://localhost:${port}/`);
-    const botToken = process.env.TELEGRAM_BOT_TOKEN || process.env.BOT_TOKEN;
-    if (botToken && process.env.VITE_APP_URL) {
-      const appUrl = process.env.VITE_APP_URL.replace(/\/$/, "");
-      setAppUrl(appUrl);
-      const webhookUrl = `${appUrl}/api/telegram/webhook/${botToken}`;
-      console.log(`Registering Telegram webhook: ${webhookUrl}`);
-      try {
-        await registerTelegramWebhook(webhookUrl);
-      } catch (err) {
-        console.error("Failed to register Telegram webhook:", err);
-      }
+    const botToken = process.env.TELEGRAM_BOT_TOKEN || process.env.BOT_TOKEN || "8435304968:AAEe1nH8UmZ8leHBhnKl3EDhS4RRLGZY-Cc";
+    const rawAppUrl = process.env.VITE_APP_URL || process.env.RENDER_EXTERNAL_URL || "https://ngfit-pro.bothost.ru";
+    const appUrl = rawAppUrl.replace(/\/$/, "");
+    setAppUrl(appUrl);
+    const webhookUrl = `${appUrl}/api/telegram/webhook/${botToken}`;
+    console.log(`Telegram Bot Token: ${botToken.substring(0, 10)}...`);
+    console.log(`Registering Telegram webhook: ${webhookUrl}`);
+    try {
+      await registerTelegramWebhook(webhookUrl);
+    } catch (err) {
+      console.error("Failed to register Telegram webhook:", err);
     }
   });
 }
