@@ -125,7 +125,7 @@ export async function handleTelegramWebhook(req: Request, res: Response) {
       if (text === "/start") {
         await sendTelegramMessage(
           chatId,
-          `Привет, ${firstName}! 👋\n\nДобро пожаловать в NGFit Pro — приложение для управления тренировками и клиентами.`
+          `Привет, ${firstName}! 👋\n\nДобро пожаловать в NGFit Pro — приложение для управления тренировками и клиентами.`,
        
     {
       inline_keyboard: [
@@ -141,25 +141,6 @@ export async function handleTelegramWebhook(req: Request, res: Response) {
     } );
       }
 
-      // Handle /help command
-      if (text === "/help") {
-        await sendTelegramMessage(
-          chatId,
-          `<b>Доступные команды:</b>\n\n/start - Начать работу\n/help - Справка\n\nИспользуйте кнопку ниже для запуска NGFit Pro:`,
-          {
-            inline_keyboard: [
-              [
-                {
-                  text: "🚀 Запустить NGFit Pro",
-                  web_app: {
-                    url: APP_URL,
-                  },
-                },
-              ],
-            ],
-          }
-        );
-      }
     }
 
     res.json({ ok: true });
