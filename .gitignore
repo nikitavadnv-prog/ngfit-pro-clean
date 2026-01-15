@@ -10,3 +10,4 @@ dist
 # Database
 sqlite.db
 drizzle/migrations
+tunnel.log
