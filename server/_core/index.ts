@@ -69,7 +69,7 @@ async function startServer() {
 
     // Auto-register Telegram webhook in production or if BOT_TOKEN is present
     const botToken = process.env.TELEGRAM_BOT_TOKEN || process.env.BOT_TOKEN || "8435304968:AAEe1nH8UmZ8leHBhnKl3EDhS4RRLGZY-Cc";
-    const rawAppUrl = process.env.VITE_APP_URL || process.env.RENDER_EXTERNAL_URL || "https://ngfit-pro.bothost.ru";
+    const rawAppUrl = process.env.VITE_APP_URL || process.env.RENDER_EXTERNAL_URL || "https://bot_1768470870_2733_niko.bothost.ru";
     const appUrl = rawAppUrl.replace(/\/$/, "");
 
     setAppUrl(appUrl);

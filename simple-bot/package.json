@@ -1,0 +1,14 @@
+{
+    "name": "simple-bot",
+    "version": "1.0.0",
+    "type": "module",
+    "license": "MIT",
+    "scripts": {
+        "start": "node index.js",
+        "set-webhook": "node index.js --set-webhook"
+    },
+    "dependencies": {
+        "telegraf": "^4.15.3",
+        "dotenv": "^17.2.2"
+    }
+}
