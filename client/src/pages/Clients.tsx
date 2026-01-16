@@ -1,28 +1,45 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { ArrowLeft, Trash2, Edit2, Send } from "lucide-react";
+import { ArrowLeft, Trash2, Edit2, Send, Loader2, Copy, Check } from "lucide-react";
 import { useTelegramSync } from "@/hooks/useTelegramSync";
 import { toast } from "sonner";
-
-interface Client {
-  id: string;
-  name: string;
-  phone: string;
-  email: string;
-  birthDate: string;
-  experience: string;
-  injuries: string;
-  contraindications: string;
-  chronicDiseases: string;
-  badHabits: string;
-}
+import { trpc } from "@/lib/trpc";
+import type { Client } from "@shared/types";
 
 export default function Clients() {
   const [, navigate] = useLocation();
-  const [clients, setClients] = useState<Client[]>([]);
+
+  // TRPC Hooks
+  const { data: user } = trpc.auth.me.useQuery();
+  const { data: clients, isLoading, refetch } = trpc.fitness.getClients.useQuery();
+  const createClient = trpc.fitness.createClient.useMutation({
+    onSuccess: () => {
+      toast.success("Клиент добавлен");
+      refetch();
+      resetForm();
+    },
+    onError: (err) => toast.error(`Ошибка: ${err.message}`),
+  });
+  const updateClient = trpc.fitness.updateClient.useMutation({
+    onSuccess: () => {
+      toast.success("Клиент обновлен");
+      refetch();
+      setEditingId(null);
+      resetForm();
+    },
+    onError: (err) => toast.error(`Ошибка: ${err.message}`),
+  });
+  const deleteClient = trpc.fitness.deleteClient.useMutation({
+    onSuccess: () => {
+      toast.success("Клиент удален");
+      refetch();
+    },
+    onError: (err) => toast.error(`Ошибка: ${err.message}`),
+  });
+
   const [formData, setFormData] = useState({
     name: "",
     phone: "",
@@ -34,45 +51,10 @@ export default function Clients() {
     chronicDiseases: "",
     badHabits: "",
   });
-  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<number | null>(null);
   const { syncToTelegram, isSyncing } = useTelegramSync();
 
-  // Load clients from localStorage
-  useEffect(() => {
-    const saved = localStorage.getItem("ngfit_clients");
-    if (saved) {
-      setClients(JSON.parse(saved));
-    }
-  }, []);
-
-  // Save clients to localStorage
-  const saveClients = (newClients: Client[]) => {
-    setClients(newClients);
-    localStorage.setItem("ngfit_clients", JSON.stringify(newClients));
-  };
-
-  const handleAddClient = () => {
-    if (!formData.name || !formData.phone || !formData.email) {
-      toast.error("Заполните обязательные поля");
-      return;
-    }
-
-    if (editingId) {
-      const updated = clients.map((c) =>
-        c.id === editingId ? { ...c, ...formData } : c
-      );
-      saveClients(updated);
-      setEditingId(null);
-      toast.success("Клиент обновлен");
-    } else {
-      const newClient: Client = {
-        id: Date.now().toString(),
-        ...formData,
-      };
-      saveClients([...clients, newClient]);
-      toast.success("Клиент добавлен");
-    }
-
+  const resetForm = () => {
     setFormData({
       name: "",
       phone: "",
@@ -86,29 +68,45 @@ export default function Clients() {
     });
   };
 
+  const handleAddClient = () => {
+    if (!formData.name) {
+      toast.error("Имя обязательно для заполнения");
+      return;
+    }
+
+    if (editingId) {
+      updateClient.mutate({
+        id: editingId,
+        ...formData,
+      });
+    } else {
+      createClient.mutate(formData);
+    }
+  };
+
   const handleEdit = (client: Client) => {
     setFormData({
       name: client.name,
-      phone: client.phone,
-      email: client.email,
-      birthDate: client.birthDate,
-      experience: client.experience,
-      injuries: client.injuries,
-      contraindications: client.contraindications,
-      chronicDiseases: client.chronicDiseases,
-      badHabits: client.badHabits,
+      phone: client.phone || "",
+      email: client.email || "",
+      birthDate: client.birthDate || "",
+      experience: client.experience || "",
+      injuries: client.injuries || "",
+      contraindications: client.contraindications || "",
+      chronicDiseases: client.chronicDiseases || "",
+      badHabits: client.badHabits || "",
     });
     setEditingId(client.id);
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = (id: number) => {
     if (confirm("Удалить клиента?")) {
-      saveClients(clients.filter((c) => c.id !== id));
-      toast.success("Клиент удален");
+      deleteClient.mutate(id);
     }
   };
 
   const handleSyncToTelegram = async () => {
+    if (!clients) return;
     const result = await syncToTelegram({ clients });
     if (result.success) {
       toast.success("Данные синхронизированы с Telegram!");
@@ -117,6 +115,18 @@ export default function Clients() {
     }
   };
 
+  const copyInviteLink = () => {
+    if (!user?.id) {
+      toast.error("Не удалось определить ID тренера");
+      return;
+    }
+    const link = `${window.location.origin}/onboarding?trainerId=${user.id}`;
+    navigator.clipboard.writeText(link);
+    toast.success("Ссылка скопирована!");
+  };
+
+  const isSubmitting = createClient.isPending || updateClient.isPending || deleteClient.isPending;
+
   return (
     <div className="min-h-screen w-full p-4 relative">
       {/* Dark overlay */}
@@ -124,20 +134,41 @@ export default function Clients() {
 
       <div className="relative z-10 max-w-2xl mx-auto">
         {/* Header */}
-        <div className="flex items-center gap-3 mb-6">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => navigate("/")}
-            className="text-white hover:bg-white/20"
-          >
-            <ArrowLeft size={24} />
-          </Button>
-          <h1 className="text-3xl font-bold text-white">Клиенты</h1>
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-3">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => navigate("/")}
+              className="text-white hover:bg-white/20"
+            >
+              <ArrowLeft size={24} />
+            </Button>
+            <h1 className="text-3xl font-bold text-white">Клиенты</h1>
+          </div>
+
+          {user?.id && (
+            <Button
+              onClick={copyInviteLink}
+              variant="outline"
+              size="sm"
+              className="bg-white/10 text-white border-white/20 hover:bg-white/20 backdrop-blur"
+            >
+              <Copy size={16} className="mr-2" />
+              Анкета
+            </Button>
+          )}
         </div>
 
+        {/* Loading State */}
+        {isLoading && (
+          <div className="bg-white/95 backdrop-blur p-6 rounded-2xl flex justify-center">
+            <Loader2 className="animate-spin text-blue-600" />
+          </div>
+        )}
+
         {/* Sync Button */}
-        {clients.length > 0 && (
+        {!isLoading && clients && clients.length > 0 && (
           <Button
             onClick={handleSyncToTelegram}
             disabled={isSyncing}
@@ -156,7 +187,7 @@ export default function Clients() {
 
           <div className="space-y-3">
             <Input
-              placeholder="ФИО"
+              placeholder="ФИО *"
               value={formData.name}
               onChange={(e) =>
                 setFormData({ ...formData, name: e.target.value })
@@ -237,77 +268,86 @@ export default function Clients() {
 
             <Button
               onClick={handleAddClient}
+              disabled={isSubmitting}
               className="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-semibold"
             >
-              {editingId ? "Сохранить" : "Добавить"}
+              {isSubmitting ? (
+                <Loader2 className="w-5 h-5 animate-spin" />
+              ) : editingId ? (
+                "Сохранить"
+              ) : (
+                "Добавить"
+              )}
             </Button>
           </div>
         </Card>
 
         {/* Clients List */}
-        <div className="space-y-3">
-          {clients.length === 0 ? (
-            <Card className="bg-white/95 backdrop-blur p-8 text-center rounded-2xl">
-              <p className="text-gray-600">Клиентов нет. Добавьте первого!</p>
-            </Card>
-          ) : (
-            clients.map((client) => (
-              <Card
-                key={client.id}
-                className="bg-white/95 backdrop-blur p-4 rounded-xl flex justify-between items-start"
-              >
-                <div className="flex-1">
-                  <h3 className="font-semibold text-gray-900">{client.name}</h3>
-                  <p className="text-sm text-gray-600">{client.phone}</p>
-                  <p className="text-sm text-gray-600">{client.email}</p>
-                  {client.experience && (
-                    <p className="text-xs text-gray-500 mt-1">
-                      Опыт: {client.experience}
-                    </p>
-                  )}
-                  {client.injuries && (
-                    <p className="text-xs text-red-600 mt-1">
-                      🩹 Травмы: {client.injuries}
-                    </p>
-                  )}
-                  {client.contraindications && (
-                    <p className="text-xs text-orange-600 mt-1">
-                      ⚠️ Противопоказания: {client.contraindications}
-                    </p>
-                  )}
-                  {client.chronicDiseases && (
-                    <p className="text-xs text-yellow-600 mt-1">
-                      💊 Заболевания: {client.chronicDiseases}
-                    </p>
-                  )}
-                  {client.badHabits && (
-                    <p className="text-xs text-gray-600 mt-1">
-                      🚭 Привычки: {client.badHabits}
-                    </p>
-                  )}
-                </div>
-                <div className="flex gap-2">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => handleEdit(client)}
-                    className="text-blue-600 hover:bg-blue-50"
-                  >
-                    <Edit2 size={18} />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => handleDelete(client.id)}
-                    className="text-red-600 hover:bg-red-50"
-                  >
-                    <Trash2 size={18} />
-                  </Button>
-                </div>
+        {!isLoading && (
+          <div className="space-y-3">
+            {clients?.length === 0 ? (
+              <Card className="bg-white/95 backdrop-blur p-8 text-center rounded-2xl">
+                <p className="text-gray-600">Клиентов нет. Добавьте первого!</p>
               </Card>
-            ))
-          )}
-        </div>
+            ) : (
+              clients?.map((client) => (
+                <Card
+                  key={client.id}
+                  className="bg-white/95 backdrop-blur p-4 rounded-xl flex justify-between items-start"
+                >
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-gray-900">{client.name}</h3>
+                    {client.phone && <p className="text-sm text-gray-600">{client.phone}</p>}
+                    {client.email && <p className="text-sm text-gray-600">{client.email}</p>}
+                    {client.experience && (
+                      <p className="text-xs text-gray-500 mt-1">
+                        Опыт: {client.experience}
+                      </p>
+                    )}
+                    {client.injuries && (
+                      <p className="text-xs text-red-600 mt-1">
+                        🩹 Травмы: {client.injuries}
+                      </p>
+                    )}
+                    {client.contraindications && (
+                      <p className="text-xs text-orange-600 mt-1">
+                        ⚠️ Противопоказания: {client.contraindications}
+                      </p>
+                    )}
+                    {client.chronicDiseases && (
+                      <p className="text-xs text-yellow-600 mt-1">
+                        💊 Заболевания: {client.chronicDiseases}
+                      </p>
+                    )}
+                    {client.badHabits && (
+                      <p className="text-xs text-gray-600 mt-1">
+                        🚭 Привычки: {client.badHabits}
+                      </p>
+                    )}
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleEdit(client)}
+                      className="text-blue-600 hover:bg-blue-50"
+                    >
+                      <Edit2 size={18} />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleDelete(client.id)}
+                      className="text-red-600 hover:bg-red-50"
+                    >
+                      <Trash2 size={18} />
+                    </Button>
+                  </div>
+                </Card>
+              ))
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

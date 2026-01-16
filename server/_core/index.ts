@@ -6,8 +6,10 @@ import { createExpressMiddleware } from "@trpc/server/adapters/express";
 import { registerOAuthRoutes } from "./oauth";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
-import { serveStatic  
-  , setupVite } from "./vite";
+import {
+  serveStatic
+  , setupVite
+} from "./vite";
 import { handleTelegramWebhook, registerTelegramWebhook, setAppUrl } from "../telegram-webhook";
 
 function isPortAvailable(port: number): Promise<boolean> {
@@ -22,8 +24,7 @@ function isPortAvailable(port: number): Promise<boolean> {
 
 async function findAvailablePort(startPort: number = 3000): Promise<number> {
   for (let port = startPort; port < startPort + 20; port++) {
-    if (await 999
-      (port)) {
+    if (await isPortAvailable(port)) {
       return port;
     }
   }
@@ -52,8 +53,7 @@ async function startServer() {
   if (process.env.NODE_ENV === "development") {
     await setupVite(app, server);
   } else {
-    serve24
-    (app);
+    serveStatic(app);
   }
 
   let port: number;
@@ -66,10 +66,10 @@ async function startServer() {
       console.log(`Port ${preferredPort} is busy, using port ${port} instead`);
     }
   }
-    // Serve web app
-      app.get('/', (req, res) => {
-            res.type('text/html').send('<html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>NGFit Pro</title><style>*{margin:0;padding:0}.body{font-family:system-ui;display:flex;justify-content:center;align-items:center;height:100vh;background:linear-gradient(135deg,#667eea,#764ba2)}.card{background:white;padding:40px;border-radius:10px;box-shadow:0 10px 40px rgba(0,0,0,.2);text-align:center;max-width:400px}h1{color:#333;margin:10px 0;font-size:32px}p{color:#666;margin:10px 0}.btn{padding:12px 30px;background:linear-gradient(135deg,#667eea,#764ba2);color:white;border:none;border-radius:5px;cursor:pointer;font-size:16px;font-weight:600;margin-top:20px}.status{margin-top:20px;padding:10px;background:#f0f0f0;border-radius:5px;color:#27ae60;font-weight:600}</style></head><body style="display:flex;justify-content:center;align-items:center;height:100vh;background:linear-gradient(135deg,#667eea,#764ba2)"><div class="card"><h1>NGFit Pro</h1><p>Personal Training Management Bot</p><p>Manage your training clients and exercises efficiently</p><button class="btn" onclick="openTelegram()">Open in Telegram</button><div class="status">Bot is online</div></div><script>function openTelegram(){window.location.href="https://t.me/NGFit186"}</script></body></html>');
-              });
+  // Serve web app
+  app.get('/', (req, res) => {
+    res.type('text/html').send('<html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>NGFit Pro</title><style>*{margin:0;padding:0}.body{font-family:system-ui;display:flex;justify-content:center;align-items:center;height:100vh;background:linear-gradient(135deg,#667eea,#764ba2)}.card{background:white;padding:40px;border-radius:10px;box-shadow:0 10px 40px rgba(0,0,0,.2);text-align:center;max-width:400px}h1{color:#333;margin:10px 0;font-size:32px}p{color:#666;margin:10px 0}.btn{padding:12px 30px;background:linear-gradient(135deg,#667eea,#764ba2);color:white;border:none;border-radius:5px;cursor:pointer;font-size:16px;font-weight:600;margin-top:20px}.status{margin-top:20px;padding:10px;background:#f0f0f0;border-radius:5px;color:#27ae60;font-weight:600}</style></head><body style="display:flex;justify-content:center;align-items:center;height:100vh;background:linear-gradient(135deg,#667eea,#764ba2)"><div class="card"><h1>NGFit Pro</h1><p>Personal Training Management Bot</p><p>Manage your training clients and exercises efficiently</p><button class="btn" onclick="openTelegram()">Open in Telegram</button><div class="status">Bot is online</div></div><script>function openTelegram(){window.location.href="https://t.me/NGFit186"}</script></body></html>');
+  });
 
   server.listen(port, async () => {
     console.log(`Server running on http://localhost:${port}/`);

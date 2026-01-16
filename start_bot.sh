@@ -6,7 +6,7 @@ lsof -ti:3001 | xargs kill -9 2>/dev/null
 
 echo "Starting NGFit Pro Server..."
 # Start the server in the background
-npm run dev > server.log 2>&1 &
+PORT=3001 npm run dev > server.log 2>&1 &
 SERVER_PID=$!
 
 echo "Waiting for server to initialize..."

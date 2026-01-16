@@ -55,6 +55,8 @@ export const exercises = sqliteTable("exercises", {
   userId: integer("userId").notNull(),
   name: text("name").notNull(),
   description: text("description"),
+  muscleGroup: text("muscleGroup"),
+  type: text("type"),
   sets: integer("sets"),
   reps: text("reps"),
   weight: text("weight"),

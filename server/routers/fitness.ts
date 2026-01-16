@@ -10,7 +10,7 @@ export const fitnessRouter = router({
     if (!ctx.user?.id) throw new Error("Not authenticated");
     const db = await getDb();
     if (!db) return [];
-    
+
     return await db.select().from(clients).where(eq(clients.userId, ctx.user.id));
   }),
 
@@ -91,6 +91,8 @@ export const fitnessRouter = router({
     .input(z.object({
       name: z.string(),
       description: z.string().optional(),
+      muscleGroup: z.string().optional(),
+      type: z.string().optional(),
       sets: z.number().optional(),
       reps: z.string().optional(),
       weight: z.string().optional(),
@@ -113,6 +115,8 @@ export const fitnessRouter = router({
       id: z.number(),
       name: z.string().optional(),
       description: z.string().optional(),
+      muscleGroup: z.string().optional(),
+      type: z.string().optional(),
       sets: z.number().optional(),
       reps: z.string().optional(),
       weight: z.string().optional(),
@@ -207,5 +211,38 @@ export const fitnessRouter = router({
         .where(and(eq(schedules.id, input), eq(schedules.userId, ctx.user.id)));
 
       return { success: true };
+    }),
+
+  // Public Onboarding Flow
+  submitOnboarding: publicProcedure
+    .input(z.object({
+      trainerId: z.number(),
+      name: z.string(),
+      phone: z.string().optional(),
+      email: z.string().optional(),
+      birthDate: z.string().optional(),
+      experience: z.string().optional(),
+      injuries: z.string().optional(),
+      contraindications: z.string().optional(),
+      chronicDiseases: z.string().optional(),
+      badHabits: z.string().optional(),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      // Note: This is a public endpoint (or protected by generic auth) where a client 
+      // submits data to be added to a Trainer's list. 
+      // Real-world: Should probably verify a token or invite code.
+      // For now: Trusted MVP flow logic.
+
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+
+      const { trainerId, ...data } = input;
+
+      const result = await db.insert(clients).values({
+        userId: trainerId,
+        ...data,
+      });
+
+      return result;
     }),
 });

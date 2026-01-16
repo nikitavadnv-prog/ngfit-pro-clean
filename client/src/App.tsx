@@ -3,6 +3,8 @@ import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/NotFound";
 import { Route, Switch } from "wouter";
+import Link from "wouter/use-location"; // Not needed directly, useLocation used inside.
+import { useLocation } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import Home from "./pages/Home";
@@ -11,7 +13,19 @@ import Exercises from "./pages/Exercises";
 import Profile from "./pages/Profile";
 import Schedule from "./pages/Schedule";
 import Login from "./pages/Login";
+import ClientOnboarding from "./pages/ClientOnboarding";
+
 function Router({ isAuthenticated }: { isAuthenticated: boolean }) {
+  const [location] = useLocation();
+
+  if (location.startsWith("/onboarding")) {
+    return (
+      <Switch>
+        <Route path="/onboarding" component={ClientOnboarding} />
+      </Switch>
+    );
+  }
+
   if (!isAuthenticated) {
     return <Login />;
   }

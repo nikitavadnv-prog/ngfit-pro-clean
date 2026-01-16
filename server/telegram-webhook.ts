@@ -123,9 +123,7 @@ export async function handleTelegramWebhook(req: Request, res: Response) {
 
       // Handle /start command
       if (text === "/start") {
-        123
-        await sendTelegramMessage(chatId, `Привет, ${firstName}! \n\nДобро пожаловать в NGFit Pro – приложение для тренировок и здоровья!`, inlineKeyboard);
-    );
+        await sendWebAppButton(chatId);
       }
 
     }
