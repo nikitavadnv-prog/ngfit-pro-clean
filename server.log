@@ -8,3 +8,10 @@ Server running on http://localhost:3001/
 Telegram Bot Token: 8473390323...
 Registering Telegram webhook: https://ngfit-pro.bothost.ru/api/telegram/webhook/8473390323:AAFPi22iuw7Gl_NkDSJ-DI7aCVZN95b-bMSIE
 Failed to register webhook: Unauthorized
+1:49:20 AM [tsx] change in ./server/_core/vite.ts Restarting...
+c[OAuth] Initialized with baseURL: 
+[OAuth] ERROR: OAUTH_SERVER_URL is not configured! Set OAUTH_SERVER_URL environment variable.
+Server running on http://localhost:3001/
+Telegram Bot Token: 8473390323...
+Registering Telegram webhook: https://ngfit-pro.bothost.ru/api/telegram/webhook/8473390323:AAFPi22iuw7Gl_NkDSJ-DI7aCVZN95b-bMSIE
+Failed to register webhook: Unauthorized
