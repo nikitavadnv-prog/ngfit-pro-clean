@@ -2,20 +2,9 @@
 > ngfit-pro@1.0.0 dev
 > NODE_ENV=development tsx watch server/_core/index.ts
 
-file:///Users/nikita/ngfit-pro-clean/node_modules/@libsql/core/lib-esm/config.js:94
-        throw new LibsqlError('The client supports only "libsql:", "wss:", "ws:", "https:", "http:" and "file:" URLs, ' +
-              ^
-
-LibsqlError: URL_SCHEME_NOT_SUPPORTED: The client supports only "libsql:", "wss:", "ws:", "https:", "http:" and "file:" URLs, got "mysql:". For more information, please read https://github.com/libsql/libsql-client-ts#supported-urls
-    at expandConfig (file:///Users/nikita/ngfit-pro-clean/node_modules/@libsql/core/lib-esm/config.js:94:15)
-    at createClient (file:///Users/nikita/ngfit-pro-clean/node_modules/@libsql/client/lib-esm/node.js:11:26)
-    at <anonymous> (/Users/nikita/ngfit-pro-clean/server/db.ts:12:16)
-    at ModuleJob.run (node:internal/modules/esm/module_job:413:25)
-    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:660:26)
-    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5) {
-  code: 'URL_SCHEME_NOT_SUPPORTED',
-  rawCode: undefined,
-  [cause]: undefined
-}
-
-Node.js v24.12.0
+[OAuth] Initialized with baseURL: https://not-configured.example.com
+Server running on http://localhost:3000/
+Telegram Bot Token: 8435304968...
+Registering Telegram webhook: https://bot_1768472899_2622_niko.bothost.ru/api/telegram/webhook/8435304968:AAEe1nH8UmZ8leHBhnKl3EDhS4RRLGZY-Cc
+✓ Telegram webhook registered successfully
+Webhook URL: https://bot_1768472899_2622_niko.bothost.ru/api/telegram/webhook/8435304968:AAEe1nH8UmZ8leHBhnKl3EDhS4RRLGZY-Cc
