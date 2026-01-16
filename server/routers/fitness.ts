@@ -10,7 +10,7 @@ export const fitnessRouter = router({
     if (!ctx.user?.id) throw new Error("Not authenticated");
     const db = await getDb();
     if (!db) return [];
-    
+
     return await db.select().from(clients).where(eq(clients.userId, ctx.user.id));
   }),
 
@@ -20,6 +20,11 @@ export const fitnessRouter = router({
       phone: z.string().optional(),
       email: z.string().optional(),
       birthDate: z.string().optional(),
+      height: z.number().optional(),
+      weight: z.number().optional(),
+      gender: z.enum(["male", "female"]).optional(),
+      goals: z.string().optional(),
+      telegramId: z.string().optional(),
       experience: z.string().optional(),
       injuries: z.string().optional(),
       contraindications: z.string().optional(),

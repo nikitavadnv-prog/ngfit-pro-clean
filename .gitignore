@@ -9,4 +9,3 @@ dist
 
 # Database
 sqlite.db
-drizzle/migrations

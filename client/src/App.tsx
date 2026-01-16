@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/NotFound";
-import { Route, Switch } from "wouter";
+import { Route, Switch, useLocation } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import Home from "./pages/Home";
@@ -11,8 +11,20 @@ import Exercises from "./pages/Exercises";
 import Profile from "./pages/Profile";
 import Schedule from "./pages/Schedule";
 import Login from "./pages/Login";
+import ClientOnboarding from "./pages/ClientOnboarding";
+
 function Router({ isAuthenticated }: { isAuthenticated: boolean }) {
+  // Check if we are in onboarding mode (e.g. ?start=new_client)
+  const tg = (window as any).Telegram?.WebApp;
+  const startParam = tg?.initDataUnsafe?.start_param;
+  const [location] = useLocation();
+
+  if (startParam === "new_client" || location === "/onboarding") {
+    return <ClientOnboarding />;
+  }
+
   if (!isAuthenticated) {
+    // If not authenticated and not onboarding, show login (or onboarding choice)
     return <Login />;
   }
 
@@ -23,6 +35,7 @@ function Router({ isAuthenticated }: { isAuthenticated: boolean }) {
       <Route path={"/exercises"} component={Exercises} />
       <Route path={"/profile"} component={Profile} />
       <Route path={"/schedule"} component={Schedule} />
+      <Route path={"/onboarding"} component={ClientOnboarding} />
       <Route path={"/404"} component={NotFound} />
       <Route component={NotFound} />
     </Switch>
