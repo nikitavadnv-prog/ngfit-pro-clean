@@ -63,8 +63,12 @@ def update_on_server():
         run_command(child, "npm run build", timeout=600)
         
         # 5. Restart PM2
+        # 5. Restart PM2 (Force correct directory)
         print("--- 5. Restarting Bot ---")
-        run_command(child, "pm2 reload all")
+        # Stop existing process to ensure we launch from the new directory
+        run_command(child, "pm2 delete ngfit") 
+        # Start fresh from current directory
+        run_command(child, 'pm2 start npm --name "ngfit" --cwd /root/ngfit-pro-clean -- run start')
         run_command(child, "pm2 save")
 
         print("--- Update Complete! ---")
