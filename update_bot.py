@@ -60,6 +60,8 @@ def update_on_server():
 
         # 4. Build
         print("--- 4. Rebuilding App ---")
+        # Reinstall esbuild specifically to fix architecture mismatch
+        run_command(child, "npm rebuild esbuild", timeout=300)
         run_command(child, "npm run build", timeout=600)
         
         # 5. Restart PM2
