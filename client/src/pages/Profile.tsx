@@ -122,10 +122,10 @@ export default function Profile() {
             variant="ghost"
             size="icon"
             onClick={handleLogout}
-            className="text-red-400 hover:bg-red-500/20"
-            title="Выход"
+            className="text-white/30 hover:text-white/80 hover:bg-transparent h-8 w-8"
+            title="Выйти"
           >
-            <LogOut size={24} />
+            <LogOut size={16} />
           </Button>
         </div>
 

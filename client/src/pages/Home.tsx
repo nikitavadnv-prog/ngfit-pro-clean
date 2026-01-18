@@ -38,6 +38,26 @@ export default function Home() {
       <div className="absolute inset-0 bg-black/40"></div>
 
       <div className="relative z-10 w-full max-w-sm mb-12">
+        {/* Header with Logout */}
+        <div className="flex justify-between items-center mb-6 px-2">
+          <h1 className="text-3xl font-bold text-white drop-shadow-md">Меню</h1>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => {
+              if (confirm("Выйти из аккаунта?")) {
+                localStorage.removeItem("ngfit_user");
+                localStorage.removeItem("ngfit_trainer_profile");
+                window.location.reload();
+              }
+            }}
+            className="text-white/30 hover:text-white/80 hover:bg-transparent h-8 w-8"
+            title="Выйти"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" x2="9" y1="12" y2="12" /></svg>
+          </Button>
+        </div>
+
         {/* Menu Grid */}
         <div className="grid grid-cols-2 gap-4">
           {menuItems.map((item) => {

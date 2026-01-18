@@ -283,16 +283,43 @@ export default function Schedule() {
 
       <div className="relative z-10 max-w-2xl mx-auto">
         {/* Header */}
-        <div className="flex items-center gap-3 mb-6">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setSelectedTime(null)}
-            className="text-white hover:bg-white/20"
-          >
-            <ArrowLeft size={24} />
-          </Button>
-          <h1 className="text-3xl font-bold text-white">Новая тренировка</h1>
+        <div className="flex items-center justify-between mb-6 gap-2">
+          <div className="flex items-center gap-3 overflow-hidden">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setSelectedTime(null)}
+              className="text-white hover:bg-white/20 flex-shrink-0"
+            >
+              <ArrowLeft size={24} />
+            </Button>
+            <h1 className="text-3xl font-bold text-white truncate">Новая тренировка</h1>
+          </div>
+
+          <div className="flex items-center gap-1 flex-shrink-0">
+            <Button variant="ghost" size="sm" className="bg-white/10 hover:bg-white/20 text-white flex items-center gap-2 h-9 px-3">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" /><polyline points="14 2 14 8 20 8" /><path d="M12 18v-4" /><path d="M8 14h8" /></svg>
+              <span className="hidden xs:inline">Шаблоны</span>
+            </Button>
+
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={handleAddWorkout}
+              className="text-white hover:bg-white/20 h-9 w-9"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" /><polyline points="17 21 17 13 7 13 7 21" /><polyline points="7 3 7 8 15 8" /></svg>
+            </Button>
+
+            <Button
+              variant="ghost"
+              // size="sm"
+              onClick={() => setSelectedTime(null)}
+              className="text-white/70 hover:text-white h-9 px-2"
+            >
+              Назад
+            </Button>
+          </div>
         </div>
 
         {/* Workout Form */}

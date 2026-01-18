@@ -3,7 +3,7 @@ import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { ArrowLeft, Trash2, Edit2, Send, Eye } from "lucide-react";
+import { ArrowLeft, Trash2, Edit2, Send, Eye, LogOut } from "lucide-react";
 import { useTelegramSync } from "@/hooks/useTelegramSync";
 import { toast } from "sonner";
 import { Link } from "wouter";
@@ -140,16 +140,33 @@ export default function Clients() {
 
       <div className="relative z-10 max-w-2xl mx-auto">
         {/* Header */}
-        <div className="flex items-center gap-3 mb-6">
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-3">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => navigate("/")}
+              className="text-white hover:bg-white/20"
+            >
+              <ArrowLeft size={24} />
+            </Button>
+            <h1 className="text-3xl font-bold text-white">Клиенты</h1>
+          </div>
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => navigate("/")}
-            className="text-white hover:bg-white/20"
+            onClick={() => {
+              if (confirm("Выйти из аккаунта?")) {
+                localStorage.removeItem("ngfit_user");
+                localStorage.removeItem("ngfit_trainer_profile");
+                window.location.reload();
+              }
+            }}
+            className="text-white/30 hover:text-white/80 hover:bg-transparent h-8 w-8"
+            title="Выйти"
           >
-            <ArrowLeft size={24} />
+            <LogOut size={16} />
           </Button>
-          <h1 className="text-3xl font-bold text-white">Клиенты</h1>
         </div>
 
         {/* Sync Button */}

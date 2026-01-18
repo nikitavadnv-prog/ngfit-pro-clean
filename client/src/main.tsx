@@ -18,12 +18,12 @@ const redirectToLoginIfUnauthorized = (error: unknown) => {
 
   if (!isUnauthorized) return;
 
-  window.location.href = getLoginUrl();
-
   // Clear local storage to prevent login loops
   localStorage.removeItem("ngfit_user");
   localStorage.removeItem("ngfit_trainer_profile");
-  // Optional: keep clients/workouts if we want offline access, but for safety lets clear user session
+
+  // Redirect to internal login page instead of external URL to avoid loops on PC
+  window.location.href = "/";
 };
 
 queryClient.getQueryCache().subscribe(event => {
