@@ -13,6 +13,8 @@ import Schedule from "./pages/Schedule";
 import Login from "./pages/Login";
 import ClientOnboarding from "./pages/ClientOnboarding";
 import ClientDetails from "./pages/ClientDetails";
+import AIAssistant from "./pages/AIAssistant";
+import Statistics from "./pages/Statistics";
 
 function Router({ isAuthenticated }: { isAuthenticated: boolean }) {
   // Check if we are in onboarding mode (e.g. ?start=new_client)
@@ -37,6 +39,8 @@ function Router({ isAuthenticated }: { isAuthenticated: boolean }) {
       <Route path={"/exercises"} component={Exercises} />
       <Route path={"/profile"} component={Profile} />
       <Route path={"/schedule"} component={Schedule} />
+      <Route path={"/ai"} component={AIAssistant} />
+      <Route path={"/statistics"} component={Statistics} />
       <Route path={"/onboarding"} component={ClientOnboarding} />
       <Route path={"/404"} component={NotFound} />
       <Route component={NotFound} />
