@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { ArrowLeft, Trash2, Edit2, Send, Eye } from "lucide-react";
 import { useTelegramSync } from "@/hooks/useTelegramSync";
 import { toast } from "sonner";
+import { Link } from "wouter";
 
 interface Client {
   id: string;
@@ -35,7 +36,7 @@ export default function Clients() {
     badHabits: "",
   });
   const [editingId, setEditingId] = useState<string | null>(null);
-  const { syncToTelegram, isSyncing } = useTelegramSync();
+  const { syncToTelegram, syncClientsFromServer, isSyncing } = useTelegramSync();
 
   // Load clients from localStorage
   useEffect(() => {
@@ -109,11 +110,26 @@ export default function Clients() {
   };
 
   const handleSyncToTelegram = async () => {
-    const result = await syncToTelegram({ clients });
+    // 1. Sync Up (Backup to Telegram Chat)
+    await syncToTelegram({ clients });
+
+    // 2. Sync Down (Fetch new clients from Server DB)
+    const result = await syncClientsFromServer();
+
     if (result.success) {
-      toast.success("Данные синхронизированы с Telegram!");
+      // Reload clients from localStorage to reflect changes
+      const saved = localStorage.getItem("ngfit_clients");
+      if (saved) {
+        setClients(JSON.parse(saved));
+      }
+
+      if (result.added > 0 || result.updated > 0) {
+        toast.success(`Синхронизация успешна! Добавлено: ${result.added || 0}, Обновлено: ${result.updated || 0}`);
+      } else {
+        toast.success("Синхронизация успешна! Новых данных нет.");
+      }
     } else {
-      toast.error("Ошибка синхронизации");
+      toast.error("Ошибка при получении данных с сервера");
     }
   };
 
@@ -137,16 +153,14 @@ export default function Clients() {
         </div>
 
         {/* Sync Button */}
-        {clients.length > 0 && (
-          <Button
-            onClick={handleSyncToTelegram}
-            disabled={isSyncing}
-            className="w-full mb-6 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold flex items-center justify-center gap-2"
-          >
-            <Send size={18} />
-            {isSyncing ? "Синхронизация..." : "Синхронизировать с Telegram"}
-          </Button>
-        )}
+        <Button
+          onClick={handleSyncToTelegram}
+          disabled={isSyncing}
+          className="w-full mb-6 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold flex items-center justify-center gap-2"
+        >
+          <Send size={18} />
+          {isSyncing ? "Синхронизация..." : "Синхронизировать с Telegram"}
+        </Button>
 
         {/* Form */}
         <Card className="bg-white/95 backdrop-blur p-6 mb-6 rounded-2xl">

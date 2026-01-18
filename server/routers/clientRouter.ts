@@ -47,4 +47,12 @@ export const clientRouter = router({
 
             return result;
         }),
+
+    list: publicProcedure.query(async () => {
+        const db = await getDb();
+        if (!db) return [];
+
+        // For MVP, fetch all clients (assuming single trainer)
+        return db.select().from(clients);
+    }),
 });

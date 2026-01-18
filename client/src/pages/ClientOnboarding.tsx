@@ -30,9 +30,7 @@ const formSchema = z.object({
     name: z.string().min(2, "Имя должно быть не менее 2 символов"),
     surname: z.string().min(2, "Фамилия должна быть не менее 2 символов"),
     phone: z.string().min(10, "Введите корректный номер"),
-    gender: z.enum(["male", "female"], {
-        required_error: "Выберите пол",
-    }),
+    gender: z.enum(["male", "female"]),
     birthDate: z.string().min(1, "Дата рождения обязательна"),
     height: z.string().min(1, "Укажите рост"),
     weight: z.string().min(1, "Укажите вес"),
@@ -43,7 +41,7 @@ const formSchema = z.object({
 export default function ClientOnboarding() {
     const [, setLocation] = useLocation();
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const createClient = trpc.client.create.useMutation();
+    const createClient = trpc.clients.create.useMutation();
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
