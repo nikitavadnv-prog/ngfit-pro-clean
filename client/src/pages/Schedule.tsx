@@ -3,7 +3,7 @@ import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { ArrowLeft, ChevronLeft, ChevronRight } from "lucide-react";
+import { ArrowLeft, ChevronLeft, ChevronRight, Eye } from "lucide-react";
 
 interface Client {
   id: string;
@@ -155,13 +155,12 @@ export default function Schedule() {
         <button
           key={day}
           onClick={() => handleDateSelect(day)}
-          className={`p-2 rounded-lg text-sm font-semibold transition-all ${
-            isSelected
-              ? "bg-blue-500 text-white"
-              : hasWorkout
+          className={`p-2 rounded-lg text-sm font-semibold transition-all ${isSelected
+            ? "bg-blue-500 text-white"
+            : hasWorkout
               ? "bg-green-600 text-white"
               : "bg-slate-700 text-white hover:bg-slate-600"
-          }`}
+            }`}
         >
           {day}
         </button>
@@ -430,14 +429,52 @@ export default function Schedule() {
                         ))}
                       </div>
                     </div>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleDeleteWorkout(workout.id)}
-                      className="text-red-600 hover:bg-red-50"
-                    >
-                      ✕
-                    </Button>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="text-blue-600 hover:bg-blue-50"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+
+                          // Smart lookup logic
+                          let cId = workout.clientId;
+
+                          // Check exact match first
+                          if (!cId || !clients.find(c => c.id === cId)) {
+                            const exactMatch = clients.find(c => c.name === workout.clientName);
+                            if (exactMatch) cId = exactMatch.id;
+                          }
+
+                          // Check surname match
+                          if (!cId) {
+                            const parts = workout.clientName.split(" ");
+                            if (parts.length > 1) {
+                              const surname = parts.sort((a, b) => b.length - a.length)[0];
+                              const fuzzyMatch = clients.find(c => c.name.includes(surname));
+                              if (fuzzyMatch) cId = fuzzyMatch.id;
+                            }
+                          }
+
+                          if (cId) {
+                            navigate(`/clients/${cId}`);
+                          } else {
+                            alert(`Клиент "${workout.clientName}" не найден в базе`);
+                          }
+                        }}
+                      >
+                        <Eye size={18} />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleDeleteWorkout(workout.id)}
+                        className="text-red-600 hover:bg-red-50"
+                      >
+                        ✕
+                      </Button>
+                    </div>
                   </div>
                 </Card>
               ))}

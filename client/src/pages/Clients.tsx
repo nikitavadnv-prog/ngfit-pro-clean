@@ -3,7 +3,7 @@ import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { ArrowLeft, Trash2, Edit2, Send } from "lucide-react";
+import { ArrowLeft, Trash2, Edit2, Send, Eye } from "lucide-react";
 import { useTelegramSync } from "@/hooks/useTelegramSync";
 import { toast } from "sonner";
 
@@ -256,8 +256,18 @@ export default function Clients() {
                 key={client.id}
                 className="bg-white/95 backdrop-blur p-4 rounded-xl flex justify-between items-start"
               >
-                <div className="flex-1">
-                  <h3 className="font-semibold text-gray-900">{client.name}</h3>
+                <div
+                  className="flex-1 cursor-pointer hover:opacity-80 transition-opacity"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    navigate(`/clients/${client.id}`);
+                  }}
+                >
+                  <h3 className="font-semibold text-gray-900 flex items-center gap-2">
+                    {client.name}
+                    <Eye size={16} className="text-blue-500" />
+                  </h3>
                   <p className="text-sm text-gray-600">{client.phone}</p>
                   <p className="text-sm text-gray-600">{client.email}</p>
                   {client.experience && (
@@ -286,7 +296,7 @@ export default function Clients() {
                     </p>
                   )}
                 </div>
-                <div className="flex gap-2">
+                <div className="flex gap-4 items-center pl-2">
                   <Button
                     variant="ghost"
                     size="icon"

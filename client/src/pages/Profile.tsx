@@ -3,7 +3,7 @@ import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { ArrowLeft, LogOut, Edit2, Save } from "lucide-react";
+import { ArrowLeft, LogOut, Edit2, Save, Eye } from "lucide-react";
 
 interface TrainerProfile {
   name: string;
@@ -18,6 +18,7 @@ interface Workout {
   id: string;
   date: string;
   time: string;
+  clientId: string;
   clientName: string;
   workoutSets: Array<{
     exerciseId: string;
@@ -43,6 +44,7 @@ export default function Profile() {
   });
   const [editProfile, setEditProfile] = useState<TrainerProfile>({ ...profile });
   const [user, setUser] = useState<any>(null);
+  const [clients, setClients] = useState<any[]>([]); // Added clients state
 
   // Load data from localStorage
   useEffect(() => {
@@ -50,6 +52,7 @@ export default function Profile() {
     const savedProfile = localStorage.getItem("ngfit_trainer_profile");
     const savedWorkouts = localStorage.getItem("ngfit_workouts");
     const savedExercises = localStorage.getItem("ngfit_exercises");
+    const savedClients = localStorage.getItem("ngfit_clients"); // Load clients
 
     if (savedUser) {
       setUser(JSON.parse(savedUser));
@@ -64,6 +67,9 @@ export default function Profile() {
     }
     if (savedExercises) {
       setExercises(JSON.parse(savedExercises));
+    }
+    if (savedClients) {
+      setClients(JSON.parse(savedClients)); // Set clients
     }
   }, []);
 
@@ -127,21 +133,19 @@ export default function Profile() {
         <div className="flex gap-2 mb-6">
           <Button
             onClick={() => setActiveTab("workouts")}
-            className={`flex-1 py-3 rounded-lg font-semibold transition-all ${
-              activeTab === "workouts"
-                ? "bg-blue-500 text-white"
-                : "bg-slate-700 text-white hover:bg-slate-600"
-            }`}
+            className={`flex-1 py-3 rounded-lg font-semibold transition-all ${activeTab === "workouts"
+              ? "bg-blue-500 text-white"
+              : "bg-slate-700 text-white hover:bg-slate-600"
+              }`}
           >
             📋 Тренировки
           </Button>
           <Button
             onClick={() => setActiveTab("profile")}
-            className={`flex-1 py-3 rounded-lg font-semibold transition-all ${
-              activeTab === "profile"
-                ? "bg-blue-500 text-white"
-                : "bg-slate-700 text-white hover:bg-slate-600"
-            }`}
+            className={`flex-1 py-3 rounded-lg font-semibold transition-all ${activeTab === "profile"
+              ? "bg-blue-500 text-white"
+              : "bg-slate-700 text-white hover:bg-slate-600"
+              }`}
           >
             👤 Пользователь
           </Button>
@@ -166,16 +170,86 @@ export default function Profile() {
                             {new Date(workout.date).toLocaleDateString("ru-RU")} {workout.time}
                           </span>
                         </div>
-                        <p className="font-semibold text-gray-900">{workout.clientName}</p>
+                        <div
+                          className="font-semibold text-gray-900 cursor-pointer hover:text-blue-600 hover:underline transition-colors flex items-center gap-2"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+
+                            // 1. Try direct ID match
+                            let cId = workout.clientId;
+
+                            // 2. If no ID or ID not found, try finding by name (exact)
+                            if (!cId || !clients.find(c => c.id === cId)) {
+                              const exactMatch = clients.find(c => c.name === workout.clientName);
+                              if (exactMatch) cId = exactMatch.id;
+                            }
+
+                            // 3. If still not found, try finding by surname (fuzzy match)
+                            if (!cId) {
+                              const parts = workout.clientName.split(" ");
+                              if (parts.length > 1) {
+                                // Assuming Surname is usually the second part or the longest part
+                                const surname = parts.sort((a, b) => b.length - a.length)[0];
+                                const fuzzyMatch = clients.find(c => c.name.includes(surname));
+                                if (fuzzyMatch) cId = fuzzyMatch.id;
+                              }
+                            }
+
+                            if (cId) {
+                              navigate(`/clients/${cId}`);
+                            } else {
+                              alert(`Клиент "${workout.clientName}" не найден в базе`);
+                            }
+                          }}
+                        >
+                          {/* Display REAL name from DB if available, otherwise historical name */}
+                          {clients.find(c => c.id === workout.clientId)?.name || workout.clientName}
+                          <Eye size={16} className="text-blue-500" />
+                        </div>
                       </div>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleDeleteWorkout(workout.id)}
-                        className="text-red-600 hover:bg-red-50"
-                      >
-                        ✕
-                      </Button>
+                      <div className="flex gap-4 items-center">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="text-blue-600 hover:bg-blue-50"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+
+                            // Same smart lookup logic
+                            let cId = workout.clientId;
+                            if (!cId || !clients.find(c => c.id === cId)) {
+                              const exactMatch = clients.find(c => c.name === workout.clientName);
+                              if (exactMatch) cId = exactMatch.id;
+                            }
+                            if (!cId) {
+                              const parts = workout.clientName.split(" ");
+                              if (parts.length > 1) {
+                                const surname = parts.sort((a, b) => b.length - a.length)[0];
+                                const fuzzyMatch = clients.find(c => c.name.includes(surname));
+                                if (fuzzyMatch) cId = fuzzyMatch.id;
+                              }
+                            }
+
+                            if (cId) {
+                              navigate(`/clients/${cId}`);
+                            } else {
+                              alert(`Клиент "${workout.clientName}" не найден в базе`);
+                            }
+                          }}
+                        >
+                          <Eye size={18} />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleDeleteWorkout(workout.id)}
+                          className="text-red-600 hover:bg-red-50"
+                        >
+                          ✕
+                        </Button>
+                      </div>
                     </div>
 
                     {/* Workout details */}

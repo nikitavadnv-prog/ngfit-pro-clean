@@ -12,6 +12,7 @@ import Profile from "./pages/Profile";
 import Schedule from "./pages/Schedule";
 import Login from "./pages/Login";
 import ClientOnboarding from "./pages/ClientOnboarding";
+import ClientDetails from "./pages/ClientDetails";
 
 function Router({ isAuthenticated }: { isAuthenticated: boolean }) {
   // Check if we are in onboarding mode (e.g. ?start=new_client)
@@ -32,6 +33,7 @@ function Router({ isAuthenticated }: { isAuthenticated: boolean }) {
     <Switch>
       <Route path="/" component={Home} />
       <Route path={"/clients"} component={Clients} />
+      <Route path={"/clients/:id"} component={ClientDetails} />
       <Route path={"/exercises"} component={Exercises} />
       <Route path={"/profile"} component={Profile} />
       <Route path={"/schedule"} component={Schedule} />
